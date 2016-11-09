@@ -732,5 +732,25 @@ adapters.forEach(function (adapter) {
       });
     });
 
+    it.only('5857 - GET old revision with latest=true', function () {
+      var db = new PouchDB(dbs.name);
+      var first = null;
+      return db.post({ version: 'first' })
+        .then(function (info) {
+          first = info.rev;
+          return db.put({
+          _id: info.id,
+          _rev: info.rev,
+          version: 'second'
+        }).then(function (info) {
+          return db.get(info.id, {
+            open_revs: [first],
+            latest:true
+          });
+        }).then(function (result) {
+          result[0].ok.version.should.equal('second');
+        });
+      });
+    });
   });
 });
